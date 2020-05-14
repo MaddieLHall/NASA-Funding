@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+h1,p {
+  font-family: 'Alike', serif;
+}
+
+.legendSymbol {
+  border-style: solid;
+  border-color: black;
+}
+
+
+
+</style>
+<body>
+<h1> NASA's Planetary Science Budget Through the Years</h1>
+<!-- load the d3.js library -->    	
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"> </script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tienne&display=swap');
+  </style> 
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Alike&display=swap');
+  </style> 
+
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 20, right: 20, bottom: 50, left: 70},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+// parse the date / time
+var parseTime = d3.timeParse("%Y");
+
+// set the ranges
+var x = d3.scaleTime().range([0, width]);
+var y = d3.scaleLinear().range([height, 0])
+
+
+// define the 1st line
+var valueline = d3.line()
+    .defined(function(d) { return d.request >= 1; })
+    .x(function(d) { return x(d.fiscYear); })
+    .y(function(d) { return y(d.request); });
+
+// define the 2nd line
+var valueline2 = d3.line()
+    .defined(function(d) { return d.actual >= 1; })
+    .x(function(d) { return x(d.fiscYear); })
+    .y(function(d) { return y(d.actual); });
+
+// append the svg object to the body of the page
+// appends a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// Get the data
+d3.csv("planBudget.csv").then(function (data) {
+      // format the data
+      data.forEach(function (d) {
+        d.fiscYear = parseTime(d.fiscYear);
+        d.request = parseInt(d.request);
+        d.actual = parseInt(d.actual);
+      }
+      ,console.log(data)
+      );
+
+  // Scale the range of the data
+  x.domain(d3.extent(data, function(d) { return d.fiscYear; }));
+  y.domain([0, d3.max(data, function(d) {
+	  return Math.max(d.actual, d.request); })]);
+
+  // Add the valueline path.
+  svg.append("path")
+      .data([data])
+      .attr("class", "line")
+      .style("stroke-dasharray", "4,4")
+      .style("stroke", "red")
+      .attr("d", valueline);
+
+  // Add the valueline2 path.
+  svg.append("path")
+      .data([data])
+      .attr("class", "line")
+    //   .style("stroke", "red")
+      .attr("d", valueline2);
+
+let xaxis = d3.axisBottom(x).ticks(66);
+      
+
+  // Add the X Axis
+  svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xaxis)
+      .selectAll("text")
+      .style("text-anchor", "end")
+			.attr("dx", "-.8em")
+			.attr("dy", ".15em") //-.5 for 90 deg
+			.attr("transform", "rotate(-65)"); // rotates years. OG is at -65, -90 for full vertical
+
+//add dollar sign to left axis. Need to figure out how to keep comma
+let leftaxis = d3.axisLeft(y).tickFormat(d => "$" + d);
+
+// text label for the x axis
+svg.append("text")             
+      .attr("font-family", "Alike")
+      .attr("transform",
+            "translate(" + (width/2) + " ," + 
+                           (height + margin.top + 30) + ")")
+      .style("text-anchor", "middle")
+      .text("Fiscal Year");
+
+  // Add the Y Axis
+  svg.append("g")
+      .call(leftaxis);
+      
+  // text label for the y axis
+  svg.append("text")
+      .attr("font-family", "Alike")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x",0 - (height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Millions of Dollars");   
+
+
+});
+
+
+         
+// var rect1 = d3.symbol().type(d3.symbolSquare)(),
+//   rect2 = d3.symbol().type(d3.symbolSquare)();
+
+// //example output of d3.svg.symbol().type('circle')();
+// //"M0,4.51351666838205A4.51351666838205,4.51351666838205 0 1,1 0,
+// //-4.51351666838205A4.51351666838205,4.51351666838205 0 1,1 0,4.51351666838205Z"
+
+// var symbolScale =  d3.scaleOrdinal()
+//   .domain(['Amount Requested','Amount Received'])
+//   .range([ rect1, rect2] );
+
+// var svg = d3.select("svg");
+
+// svg.append("g")
+//   .attr("class", "legendSymbol")
+//   .attr("transform", "translate(750, 15)");
+
+// var legendPath = d3.legendSymbol()
+//   .scale(symbolScale)
+//   .orient("vertical")
+//   .labelWrap(30);
+
+// svg.select(".legendSymbol")
+//   .call(legendPath);
+         
+       
+
+
+var ordinal = d3.scaleOrdinal()
+  .domain(["Amount Requested", "Amount Received"])
+  .range([ "red", "steelblue"]);
+
+var svg1 = d3.select("svg");
+
+svg1.append("g")
+  .attr("class", "legendOrdinal")
+  .attr("transform", "translate(750,15)");
+
+var legendOrdinal = d3.legendColor()
+  //d3 symbol creates a path-string, for example
+  //"M0,-8.059274488676564L9.306048591020996,
+  //8.059274488676564 -9.306048591020996,8.059274488676564Z"
+  .shape("path", d3.symbol().type(d3.symbolSquare).size(250)())
+  .shapePadding(10)
+  .scale(ordinal);
+
+svg1.select(".legendOrdinal")
+  .call(legendOrdinal);
+  
+
+</script>
+<p> Gaps in the lines are due to gaps in the data provided from the original source.</br> Data from <a
+  href="https://www.planetary.org/get-involved/be-a-space-advocate/become-an-expert/planetary-exploration-budget-dataset.html">
+  The Planetary Society</a> and discovered by Jeremy Singer-Vine's <a href="http://tinyletter.com/data-is-plural"> Data Is Plural newsletter.</a>
+</p>
+</body>
+
+
+
+
+
+
