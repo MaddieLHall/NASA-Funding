@@ -102,7 +102,7 @@ d3.csv("planBudget.csv").then(function (data) {
     //   .style("stroke", "red")
       .attr("d", valueline2);
 
-let xaxis = d3.axisBottom(x).ticks(66);
+let xaxis = d3.axisBottom(x).ticks(10);
       
 
   // Add the X Axis
@@ -111,9 +111,9 @@ let xaxis = d3.axisBottom(x).ticks(66);
       .call(xaxis)
       .selectAll("text")
       .style("text-anchor", "end")
-			.attr("dx", "-.8em")
-			.attr("dy", ".15em") //-.5 for 90 deg
-			.attr("transform", "rotate(-65)"); // rotates years. OG is at -65, -90 for full vertical
+			.attr("dx", "1em")
+			.attr("dy", ".9em") //-.5 for 90 deg
+			.attr("transform", "rotate(0)"); // rotates years. OG is at -65, -90 for full vertical
 
 //add dollar sign to left axis. Need to figure out how to keep comma
 let leftaxis = d3.axisLeft(y).tickFormat(d => "$" + d);
